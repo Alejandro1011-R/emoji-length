@@ -11,63 +11,63 @@
   <main>
     <h1>Why is <code>"👍🏽".length</code> 4?</h1>
 
-    <section class="story">
-      <p id="count" class="count"></p>
-      <p id="text" aria-live="polite"></p>
-    </section>
+    <div class="layout">
+      <!-- The story. Each section is one step; data-start is the text the figure shows when you reach it. -->
+      <div class="story">
+        <section class="step" data-start="&#x1F44D;&#x1F3FD;">
+          <p>You see one thumbs-up, and JavaScript says its length is 4. What's inside it? Guess how many characters it's made of.</p>
+          <div class="row">
+            <button data-guess="1">1</button>
+            <button data-guess="2">2</button>
+            <button data-guess="4">4</button>
+            <span id="answer"></span>
+          </div>
+        </section>
 
-    <!-- Controls. data-control says which steps show each one. -->
-    <div class="controls">
-      <div data-control="guess" class="row">
-        <button data-guess="1">1</button>
-        <button data-guess="2">2</button>
-        <button data-guess="4">4</button>
-        <span id="answer" aria-live="polite"></span>
+        <section class="step" data-start="a&#x1F600;">
+          <p>JavaScript stores text in boxes of 16 bits, and <code>.length</code> counts the boxes. A box holds numbers up to 65,535. The letter a is number 97: one box. 😀 is number 128,512: it doesn't fit, so it's split into two boxes.</p>
+          <div class="row">
+            <button data-text="a">a</button>
+            <button data-text="&#x20AC;">&#x20AC;</button>
+            <button data-text="&#x1F600;">&#x1F600;</button>
+          </div>
+        </section>
+
+        <section class="step" data-start="&#x1F468;&#x200D;&#x1F469;&#x200D;&#x1F467;&#x200D;&#x1F466;">
+          <p>But one emoji can hold several characters. A skin tone is a second character after the thumb. This family is four people glued together by an invisible character, the zero-width joiner (ZWJ): one picture, eleven boxes.</p>
+          <div class="row">
+            <button data-text="&#x1F44D;">&#x1F44D;</button>
+            <button data-text="&#x1F44D;&#x1F3FD;">&#x1F44D;&#x1F3FD;</button>
+            <button data-text="&#x1F468;">1 person</button>
+            <button data-text="&#x1F468;&#x200D;&#x1F467;">2 people</button>
+            <button data-text="&#x1F468;&#x200D;&#x1F469;&#x200D;&#x1F467;">3 people</button>
+            <button data-text="&#x1F468;&#x200D;&#x1F469;&#x200D;&#x1F467;&#x200D;&#x1F466;">4 people</button>
+          </div>
+        </section>
+
+        <section class="step" data-start="&#x1F44D;&#x1F3FD;">
+          <p>So <code>.length</code> counts boxes, not what you see, and anything that cuts text by length can cut a character in half: <code id="slice"></code>. To count what a person sees, use <code>Intl.Segmenter</code>.</p>
+          <p>Your turn: try your name, a flag, or é written as e plus an accent. It looks the same and takes two boxes.</p>
+          <label>Text <input id="input" type="text" autocomplete="off" spellcheck="false"></label>
+          <div class="row">
+            <button data-text="&#xE9;">&#xE9;</button>
+            <button data-text="e&#x301;">e + accent</button>
+            <button data-text="&#x1F1EA;&#x1F1F8;">&#x1F1EA;&#x1F1F8;</button>
+          </div>
+        </section>
       </div>
 
-      <label data-control="text">Text <input id="input" type="text" autocomplete="off" spellcheck="false"></label>
-
-      <div data-control="picks" class="row">
-        <button data-text="a">a</button>
-        <button data-text="&#xE9;">&#xE9;</button>
-        <button data-text="e&#x301;">e + accent</button>
-        <button data-text="&#x20AC;">&#x20AC;</button>
-        <button data-text="&#x1F600;">&#x1F600;</button>
-        <button data-text="&#x1F1EA;&#x1F1F8;">&#x1F1EA;&#x1F1F8;</button>
-      </div>
-
-      <div data-control="tone" class="row">
-        <button data-text="&#x1F44D;">&#x1F44D;</button>
-        <button data-text="&#x1F44D;&#x1F3FB;">&#x1F44D;&#x1F3FB;</button>
-        <button data-text="&#x1F44D;&#x1F3FC;">&#x1F44D;&#x1F3FC;</button>
-        <button data-text="&#x1F44D;&#x1F3FD;">&#x1F44D;&#x1F3FD;</button>
-        <button data-text="&#x1F44D;&#x1F3FE;">&#x1F44D;&#x1F3FE;</button>
-        <button data-text="&#x1F44D;&#x1F3FF;">&#x1F44D;&#x1F3FF;</button>
-      </div>
-
-      <div data-control="family" class="row">
-        <button data-text="&#x1F468;">1 person</button>
-        <button data-text="&#x1F468;&#x200D;&#x1F467;">2 people</button>
-        <button data-text="&#x1F468;&#x200D;&#x1F469;&#x200D;&#x1F467;">3 people</button>
-        <button data-text="&#x1F468;&#x200D;&#x1F469;&#x200D;&#x1F467;&#x200D;&#x1F466;">4 people</button>
+      <!-- The figure stays in view while the story scrolls past it. -->
+      <div class="stage">
+        <section id="view">
+          <p class="legend" aria-hidden="true">
+            <span class="glyph-key">what you see</span> › <span class="char-key">characters</span> › <span class="unit-key">16-bit boxes</span>
+          </p>
+          <div id="figure" class="figure" aria-hidden="true"></div>
+          <p id="alt" class="alt" aria-live="polite"></p>
+        </section>
       </div>
     </div>
-
-    <!-- The figure, drawn by renderFigure(), and the same state as a sentence. -->
-    <section id="view">
-      <p class="legend" aria-hidden="true">
-        <span class="glyph-key">what you see</span> › <span class="char-key">characters</span> › <span class="unit-key">16-bit boxes</span>
-      </p>
-      <div id="figure" class="figure" aria-hidden="true"></div>
-      <p id="alt" class="alt"></p>
-    </section>
-    <p id="slice" class="alt" data-control="slice"></p>
-
-    <nav class="nav">
-      <button id="back">← Back</button>
-      <button id="reset">Reset this step</button>
-      <button id="next">Next →</button>
-    </nav>
   </main>
   <script type="module" src="main.js"></script>
 </body>

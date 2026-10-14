@@ -2,6 +2,7 @@
 :root {
   --bg: #fbfaf7; --ink: #1d1f24; --muted: #6b7080; --line: #d9d6cf;
   --char: #2f62d6; --unit: #d98a00; --pair: #c2410c;
+  --out: cubic-bezier(.16, 1, .3, 1); /* fast out, gentle stop */
   color-scheme: light dark;
 }
 @media (prefers-color-scheme: dark) {
@@ -10,19 +11,36 @@
 
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 18px/1.5 system-ui, sans-serif; }
-main { max-width: 900px; margin: 0 auto; padding: 24px 16px 48px; }
-h1 { font-size: clamp(1.4rem, 4vw, 2rem); }
+main { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+h1 { font-size: clamp(1.4rem, 4vw, 2.2rem); }
 code, .code, .unit { font-family: ui-monospace, monospace; }
+.alt, .legend { color: var(--muted); font-size: 0.95rem; }
 
-.story { min-height: 7em; }
-.story p { max-width: 60ch; margin: 0 0 8px; }
-.count, .alt, .legend { color: var(--muted); font-size: 0.95rem; }
+/* Story on the left, the figure fixed on the right while the story scrolls. */
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 40px; }
+.step { min-height: 80vh; display: flex; flex-direction: column; justify-content: center; gap: 12px; opacity: 0.35; transition: opacity 250ms ease-out; }
+.step.active { opacity: 1; }
+.step p { margin: 0; }
+.stage { position: sticky; top: 15vh; align-self: start; }
+
+/* On a phone: the figure on top, the story scrolling under it. */
+@media (max-width: 700px) {
+  .layout { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .stage { order: -1; top: 0; z-index: 1; padding-block: 8px; background: var(--bg); }
+  .step { min-height: 70vh; justify-content: flex-start; } /* the text starts where the section becomes active */
+  /* A smaller figure, so the story still has room under it. */
+  .figure { padding: 8px; gap: 8px; min-height: 0; }
+  .glyph { font-size: 1.8rem; }
+  .char { padding: 4px; }
+  .name { font-size: 0.8rem; }
+  .code { display: none; }
+  .alt, .legend { font-size: 0.85rem; margin: 4px 0; }
+}
 
 /* Controls */
-.controls { display: grid; gap: 12px; margin: 16px 0; }
 .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 label { display: flex; gap: 12px; align-items: center; }
-input { font: inherit; flex: 1; padding: 6px 10px; border-radius: 8px; border: 1.5px solid var(--line); background: transparent; color: var(--ink); }
+input { font: inherit; flex: 1; min-width: 0; padding: 6px 10px; border-radius: 8px; border: 1.5px solid var(--line); background: transparent; color: var(--ink); }
 button { font: inherit; padding: 6px 14px; border-radius: 8px; border: 1.5px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; }
 button[aria-pressed="true"] { border-color: var(--char); background: color-mix(in srgb, var(--char) 15%, transparent); }
 :focus-visible { outline: 3px solid var(--unit); outline-offset: 2px; }
@@ -39,9 +57,20 @@ button[aria-pressed="true"] { border-color: var(--char); background: color-mix(i
 .unit { font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; background: var(--unit); color: #1d1f24; }
 .pair .unit { background: var(--pair); color: #fff; }
 
+/* Motion. The boxes come out one by one so you can count them,
+   and the two halves of a pair slide apart from the middle. */
+.unit { --dx: 0; --dy: 6px; }
+.pair .unit:first-child { --dx: 55%; --dy: 0; }
+.pair .unit:last-child { --dx: -55%; --dy: 0; }
+.animate .unit { animation: appear 300ms var(--out) calc(var(--i) * 60ms) backwards; }
+@keyframes appear { from { opacity: 0; transform: translate(var(--dx), var(--dy)); } }
+
+/* Reduced motion: no sliding and no wait, only a short fade. */
+@media (prefers-reduced-motion: reduce) {
+  .animate .unit { animation: fade 150ms ease-out backwards; }
+}
+@keyframes fade { from { opacity: 0; } }
+
 .glyph-key { font-weight: 600; }
 .char-key { color: var(--char); font-weight: 600; }
 .unit-key { color: var(--unit); font-weight: 600; }
-
-.nav { display: flex; justify-content: space-between; gap: 8px; margin-top: 18px; }
-[hidden] { display: none !important; }

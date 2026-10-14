@@ -1,6 +1,5 @@
-// One state. A render function that reads it. Inputs that change it.
+// One state. A render function that reads it. Inputs and scrolling change it.
 import { analyze, count } from "./model.js";
-import { STEPS } from "./steps.js";
 
 // Characters you can't see get a name instead.
 const NAMES = {
@@ -15,39 +14,35 @@ const NAMES = {
   0x1f3ff: "tone",
 };
 
-let step = 0;
-let state = {};
+const sections = [...document.querySelectorAll(".step")];
+let step = -1;
+const state = { text: "" };
 
 const $ = (selector) => document.querySelector(selector);
 
+// Reaching a section starts the figure from that section's text.
 function goTo(n) {
-  if (n < 0 || n >= STEPS.length) return; // Back on the first step, Next on the last: do nothing
+  if (n === step) return;
   step = n;
-  state = { ...STEPS[step].set };
-  $("#text").textContent = STEPS[step].text; // a live region: write it only when the step changes
-  render();
+  state.text = sections[n].dataset.start;
+  for (const section of sections) section.classList.toggle("active", section === sections[n]);
+  render(true);
 }
 
-function render() {
-  const s = STEPS[step];
+function render(animate) {
   const groups = analyze(state.text);
-  const counts = count(groups);
-  const waiting = s.ask && state.guess === undefined;
+  const waiting = step === 0 && state.guess === undefined;
 
-  $("#count").textContent = `${step + 1} / ${STEPS.length}`;
-  for (const control of document.querySelectorAll("[data-control]")) {
-    control.hidden = !s.controls.includes(control.dataset.control);
-  }
   $("#input").value = state.text;
   for (const button of document.querySelectorAll("button[data-text]")) {
     button.setAttribute("aria-pressed", button.dataset.text === state.text);
   }
-  $("#answer").textContent = waiting ? "" : `You guessed ${state.guess}: it's ${counts.chars} characters in ${counts.units} boxes.`;
-  $("#slice").textContent = `.slice(0, 3) gives ${state.text.slice(0, 3)}`;
+  $("#answer").textContent = state.guess === undefined ? "" : `You guessed ${state.guess}.`;
+  $("#slice").textContent = `"${state.text}".slice(0, 3) is ${state.text.slice(0, 3)}`;
 
-  $("#view").hidden = waiting;
-  renderFigure(groups);
-  $("#alt").textContent = describe(counts);
+  $("#view").style.visibility = waiting ? "hidden" : ""; // keeps its space, so nothing jumps when it appears
+  renderFigure(groups, animate);
+  $("#alt").textContent = describe(count(groups));
 }
 
 // A small helper: an element with a class and some text.
@@ -62,16 +57,23 @@ const hex = (n) => n.toString(16).toUpperCase().padStart(4, "0");
 
 // One column per thing you see. Inside it, one box per character,
 // and inside that, the 16-bit boxes that .length counts.
-function renderFigure(groups) {
+// With animate, the boxes come out one after another (--i is their order).
+function renderFigure(groups, animate) {
   const figure = $("#figure");
+  figure.classList.toggle("animate", animate);
   figure.replaceChildren();
+  let i = 0;
   for (const group of groups) {
     const seen = el("div", "seen");
     const chars = el("div", "chars");
     for (const char of group.chars) {
       const box = el("div", char.units.length === 2 ? "char pair" : "char");
       const units = el("div", "units");
-      for (const unit of char.units) units.append(el("span", "unit", hex(unit)));
+      for (const unit of char.units) {
+        const span = el("span", "unit", hex(unit));
+        span.style.setProperty("--i", i++);
+        units.append(span);
+      }
       box.append(el("span", "name", NAMES[char.code] ?? char.char), el("span", "code", `U+${hex(char.code)}`), units);
       chars.append(box);
     }
@@ -87,24 +89,30 @@ function describe({ seen, chars, units }) {
   return `You see ${plural(seen, "symbol", "symbols")}. JavaScript stores ${plural(chars, "character", "characters")} in ${plural(units, "box", "boxes")}, so .length is ${units}.`;
 }
 
+// Typing redraws without animation, so the boxes don't replay on every key.
 $("#input").addEventListener("input", (event) => {
   state.text = event.target.value;
-  render();
+  render(false);
 });
 for (const button of document.querySelectorAll("button[data-text]")) {
   button.addEventListener("click", () => {
     state.text = button.dataset.text;
-    render();
+    render(true);
   });
 }
 for (const button of document.querySelectorAll("button[data-guess]")) {
   button.addEventListener("click", () => {
     state.guess = Number(button.dataset.guess);
-    render();
+    render(true);
   });
 }
-$("#back").addEventListener("click", () => goTo(step - 1));
-$("#next").addEventListener("click", () => goTo(step + 1));
-$("#reset").addEventListener("click", () => goTo(step));
+
+// The section crossing the middle of the screen is the one being read.
+const observer = new IntersectionObserver((entries) => {
+  for (const entry of entries) {
+    if (entry.isIntersecting) goTo(sections.indexOf(entry.target));
+  }
+}, { rootMargin: "-50% 0px -50% 0px" });
+for (const section of sections) observer.observe(section);
 
 goTo(0);
