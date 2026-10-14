@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link rel="icon" href="data:,">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Why is "👍🏽".length 4?</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>Why is <code>"👍🏽".length</code> 4?</h1>
+
+    <section class="story">
+      <p id="count" class="count"></p>
+      <p id="text" aria-live="polite"></p>
+    </section>
+
+    <!-- Controls. data-control says which steps show each one. -->
+    <div class="controls">
+      <div data-control="guess" class="row">
+        <button data-guess="1">1</button>
+        <button data-guess="2">2</button>
+        <button data-guess="4">4</button>
+        <span id="answer" aria-live="polite"></span>
+      </div>
+
+      <label data-control="text">Text <input id="input" type="text" autocomplete="off" spellcheck="false"></label>
+
+      <div data-control="picks" class="row">
+        <button data-text="a">a</button>
+        <button data-text="&#xE9;">&#xE9;</button>
+        <button data-text="e&#x301;">e + accent</button>
+        <button data-text="&#x20AC;">&#x20AC;</button>
+        <button data-text="&#x1F600;">&#x1F600;</button>
+        <button data-text="&#x1F1EA;&#x1F1F8;">&#x1F1EA;&#x1F1F8;</button>
+      </div>
+
+      <div data-control="tone" class="row">
+        <button data-text="&#x1F44D;">&#x1F44D;</button>
+        <button data-text="&#x1F44D;&#x1F3FB;">&#x1F44D;&#x1F3FB;</button>
+        <button data-text="&#x1F44D;&#x1F3FC;">&#x1F44D;&#x1F3FC;</button>
+        <button data-text="&#x1F44D;&#x1F3FD;">&#x1F44D;&#x1F3FD;</button>
+        <button data-text="&#x1F44D;&#x1F3FE;">&#x1F44D;&#x1F3FE;</button>
+        <button data-text="&#x1F44D;&#x1F3FF;">&#x1F44D;&#x1F3FF;</button>
+      </div>
+
+      <div data-control="family" class="row">
+        <button data-text="&#x1F468;">1 person</button>
+        <button data-text="&#x1F468;&#x200D;&#x1F467;">2 people</button>
+        <button data-text="&#x1F468;&#x200D;&#x1F469;&#x200D;&#x1F467;">3 people</button>
+        <button data-text="&#x1F468;&#x200D;&#x1F469;&#x200D;&#x1F467;&#x200D;&#x1F466;">4 people</button>
+      </div>
+    </div>
+
+    <!-- The figure, drawn by renderFigure(), and the same state as a sentence. -->
+    <section id="view">
+      <p class="legend" aria-hidden="true">
+        <span class="glyph-key">what you see</span> › <span class="char-key">characters</span> › <span class="unit-key">16-bit boxes</span>
+      </p>
+      <div id="figure" class="figure" aria-hidden="true"></div>
+      <p id="alt" class="alt"></p>
+    </section>
+    <p id="slice" class="alt" data-control="slice"></p>
+
+    <nav class="nav">
+      <button id="back">← Back</button>
+      <button id="reset">Reset this step</button>
+      <button id="next">Next →</button>
+    </nav>
+  </main>
+  <script type="module" src="main.js"></script>
+</body>
+</html>

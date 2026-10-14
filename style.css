@@ -1,0 +1,47 @@
+/* Colours as variables: one place to change them, and a dark version. */
+:root {
+  --bg: #fbfaf7; --ink: #1d1f24; --muted: #6b7080; --line: #d9d6cf;
+  --char: #2f62d6; --unit: #d98a00; --pair: #c2410c;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #14161b; --ink: #eceef3; --muted: #9aa0ad; --line: #343843; --char: #7aa2ff; --unit: #ffb547; --pair: #ff8a5c; }
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 18px/1.5 system-ui, sans-serif; }
+main { max-width: 900px; margin: 0 auto; padding: 24px 16px 48px; }
+h1 { font-size: clamp(1.4rem, 4vw, 2rem); }
+code, .code, .unit { font-family: ui-monospace, monospace; }
+
+.story { min-height: 7em; }
+.story p { max-width: 60ch; margin: 0 0 8px; }
+.count, .alt, .legend { color: var(--muted); font-size: 0.95rem; }
+
+/* Controls */
+.controls { display: grid; gap: 12px; margin: 16px 0; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+label { display: flex; gap: 12px; align-items: center; }
+input { font: inherit; flex: 1; padding: 6px 10px; border-radius: 8px; border: 1.5px solid var(--line); background: transparent; color: var(--ink); }
+button { font: inherit; padding: 6px 14px; border-radius: 8px; border: 1.5px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; }
+button[aria-pressed="true"] { border-color: var(--char); background: color-mix(in srgb, var(--char) 15%, transparent); }
+:focus-visible { outline: 3px solid var(--unit); outline-offset: 2px; }
+
+/* The figure: what you see > characters > boxes */
+.figure { display: flex; flex-wrap: wrap; gap: 16px; padding: 16px; border: 1.5px solid var(--line); border-radius: 12px; min-height: 9em; }
+.seen { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.glyph { font-size: 2.5rem; line-height: 1.2; }
+.chars { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.char { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px; border: 2px solid var(--char); border-radius: 8px; }
+.name { min-height: 1.5em; }
+.code { font-size: 0.75rem; color: var(--muted); }
+.units { display: flex; gap: 4px; }
+.unit { font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; background: var(--unit); color: #1d1f24; }
+.pair .unit { background: var(--pair); color: #fff; }
+
+.glyph-key { font-weight: 600; }
+.char-key { color: var(--char); font-weight: 600; }
+.unit-key { color: var(--unit); font-weight: 600; }
+
+.nav { display: flex; justify-content: space-between; gap: 8px; margin-top: 18px; }
+[hidden] { display: none !important; }
